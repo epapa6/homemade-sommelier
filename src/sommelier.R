@@ -8,6 +8,8 @@
 library('dplyr')      # count
 library("groupdata2") # downsample
 library('corrplot')   # corrplot
+library('FactoMineR') # PCA
+library('factoextra') # eigenvalue
 
 
 # ---------------------------------------------------------------------------- #
@@ -107,3 +109,46 @@ corrplot(correlation, method = "color", tl.col = "black")
 dev.off()
 
 rm(wine.analysis, wine.correlation, correlation)
+
+# ---------------------------------------------------------------------------- #
+### PCA ###
+
+wine.PCA <- PCA(subset(wine, select = -c(target.quality, target.type, quality)), 
+                scale.unit = TRUE, graph = FALSE)
+
+eig.val <- get_eigenvalue(wine.PCA)
+eig.val
+
+rm(eig.val)
+
+png(filename="./img/PCA-eigenvalues.png", width = 1480, height = 550)
+fviz_eig(wine.PCA, addlabels = TRUE)
+dev.off()
+
+png(filename="./img/PCA-variables.png",  width = 550, height = 550)
+fviz_pca_var(wine.PCA, col.var = "contrib")
+dev.off()
+
+png(filename="./img/PCA-individuals-group-type.png", width = 1000, height = 1000)
+fviz_pca_ind(wine.PCA, label = "none", col.ind = wine$target.type)
+dev.off()
+
+png(filename="./img/PCA-individuals-group-quality.png", width = 1000, height = 1000)
+fviz_pca_ind(wine.PCA, label = "none", col.ind = wine$target.quality)
+dev.off()
+
+png(filename="./img/PCA-individuals-quality.png", width = 1000, height = 1000)
+fviz_pca_ind(wine.PCA, label = "none", col.ind = wine$quality)
+dev.off()
+
+png(filename="./img/PCA-individuals.png", width = 1000, height = 1000)
+fviz_pca_ind(wine.PCA, label = "none", col.ind = "cos2")
+dev.off()
+
+png(filename="./img/PCA-qualities.png", width = 1480, height = 550)
+fviz_cos2(wine.PCA, choice = "var")
+dev.off()
+
+rm(wine.PCA)
+
+# ---------------------------------------------------------------------------- #
