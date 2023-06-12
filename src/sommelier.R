@@ -7,6 +7,7 @@
 
 library('dplyr')      # count
 library("groupdata2") # downsample
+library('corrplot')   # corrplot
 
 
 # ---------------------------------------------------------------------------- #
@@ -76,3 +77,33 @@ dev.off()
 
 
 rm(wine.red, wine.white, target.quality)
+
+
+# ---------------------------------------------------------------------------- #
+### Analisi esplorativa ###
+
+wine.analysis <- subset(wine, select = -c(target.quality, target.type))
+
+summary(wine.analysis)
+
+# boxplot per visualizzare la distribuzione dei valori nel dataset
+png(filename = "./img/boxplot-attributes.png", width = 1500, height = 800)
+par(mfrow = c(2, (ncol(wine.analysis)) / 2))
+invisible(lapply(1:ncol(wine.analysis),
+                 function(i) boxplot(wine.analysis[, i],
+                                     cex.lab = 2,
+                                     xlab = colnames(wine.analysis[i]))))
+dev.off()
+
+# matrice di correlazione degli attributi
+wine.correlation <- wine
+wine.correlation$target.quality <- as.numeric(wine$target.quality)
+wine.correlation$target.type <- as.numeric(wine$target.type)
+
+correlation <- cor(wine.correlation)
+
+png(filename = "./img/correlation.png", width = 1000, height = 1000)
+corrplot(correlation, method = "color", tl.col = "black")
+dev.off()
+
+rm(wine.analysis, wine.correlation, correlation)
