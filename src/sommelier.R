@@ -10,6 +10,7 @@ library("groupdata2") # downsample
 library('corrplot')   # corrplot
 library('FactoMineR') # PCA
 library('factoextra') # eigenvalue
+library('caret')      # train
 
 
 # ---------------------------------------------------------------------------- #
@@ -110,6 +111,7 @@ dev.off()
 
 rm(wine.analysis, wine.correlation, correlation)
 
+
 # ---------------------------------------------------------------------------- #
 ### PCA ###
 
@@ -151,6 +153,7 @@ dev.off()
 
 rm(wine.PCA)
 
+
 # ---------------------------------------------------------------------------- #
 ### Selezione Feature e Splitting ###
 
@@ -187,3 +190,64 @@ rm(split.data, attributes, wine.quality.all, wine.type.all)
 
 
 # ---------------------------------------------------------------------------- #
+### Training & Testing ###
+
+
+# Quality - naive bayes
+nb.q.model <- train(target.quality~ ., data = wine.quality.train, method = "naive_bayes", trace = FALSE)
+nb.q.pred <- predict(nb.q.model, wine.quality.test)
+nb.q.probs <- predict(nb.q.model, wine.quality.test, type="prob")
+result <- confusionMatrix(nb.q.pred, wine.quality.test$target.quality, positive = "good", mode="prec_recall")
+result
+
+# Quality - neural network
+nn.q.model <- train(target.quality~ ., data = wine.quality.train, method = "nnet", trace = FALSE)
+nn.q.pred <- predict(nn.q.model, wine.quality.test)
+nn.q.probs <- predict(nn.q.model, wine.quality.test, type="prob")
+result <- confusionMatrix(nn.q.pred, wine.quality.test$target.quality, positive = "good", mode="prec_recall")
+result
+
+# Type - naive bayes
+nb.t.model <- train(target.type~ ., data = wine.type.train, method = "naive_bayes", trace = FALSE)
+nb.t.pred <- predict(nb.t.model, wine.type.test)
+nb.t.probs <- predict(nb.t.model, wine.type.test, type="prob")
+result <- confusionMatrix(nb.t.pred, wine.type.test$target.type, positive = "red", mode="prec_recall")
+result
+
+# Type - neural network
+nn.t.model <- train(target.type~ ., data = wine.type.train, method = "nnet", trace = FALSE)
+nn.t.pred <- predict(nn.t.model, wine.type.test)
+nn.t.probs <- predict(nn.t.model, wine.type.test, type="prob")
+result <- confusionMatrix(nn.t.pred, wine.type.test$target.type, positive = "red", mode="prec_recall")
+result
+
+
+# ---------------------------------------------------------------------------- #
+### Training & Testing (10-fold) ###
+
+control <- trainControl(method = "repeatedcv", number = 10, repeats = 3,
+                        classProbs= TRUE, savePredictions = "all",
+                        summaryFunction= twoClassSummary, verboseIter=FALSE)
+
+# Quality - naive bayes (10-fold)
+nb.q10f.model <- train(target.quality~ ., data = wine, method = "naive_bayes", metric= "ROC", trControl = control, trace = FALSE)
+result <- confusionMatrix(nb.q10f.model, mode = "prec_recall", positive = "good", norm="none")
+result
+
+# Quality - neural network (10-fold)
+nn.q10f.model <- train(target.quality~ ., data = wine, method = "nnet", metric = "ROC", trControl = control, trace = FALSE)
+result <- confusionMatrix(nn.q10f.model, mode = "prec_recall", positive = "good", norm="none")
+result
+
+# Type - naive bayes (10-fold)
+nb.t10f.model <- train(target.type~ ., data = wine, method = "naive_bayes", metric= "ROC", trControl = control, trace = FALSE)
+result <- confusionMatrix(nb.t10f.model, mode = "prec_recall", positive = "red", norm="none")
+result
+
+# Type - neural network (10-fold)
+nn.t10f.model <- train(target.type~ ., data = wine, method = "nnet", metric = "ROC", trControl = control, trace = FALSE)
+result <- confusionMatrix(nn.t10f.model, mode = "prec_recall", positive = "red", norm="none")
+result
+
+rm(control, result)
+
