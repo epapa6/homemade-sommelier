@@ -152,3 +152,38 @@ dev.off()
 rm(wine.PCA)
 
 # ---------------------------------------------------------------------------- #
+### Selezione Feature e Splitting ###
+
+# selezione attributi a seguito delle PCA
+attributes <- c(
+  "target.quality",
+  "target.type",
+  
+  "total.sulfur.dioxide",
+  "volatile.acidity",
+  "density",
+  "chlorides",
+  "sulphates"
+)
+
+# funzione di split dei dataset
+split.data = function(data, p = 0.7, s = 1) {
+  set.seed(s)
+  index = sample(1:dim(data)[1])
+  train = data[index[1:floor(dim(data)[1] * p)],]
+  test = data[index[((ceiling(dim(data)[1] * p)) + 1):dim(data)[1]],]
+  return(list(train = train, test = test))
+}
+
+wine.quality.all <- split.data(select(wine.quality, all_of(attributes)), p = 0.7)
+wine.quality.train <- wine.quality.all$train 
+wine.quality.test <- wine.quality.all$test
+
+wine.type.all <- split.data(select(wine.type, all_of(attributes)), p = 0.7)
+wine.type.train <- wine.type.all$train 
+wine.type.test <- wine.type.all$test
+
+rm(split.data, attributes, wine.quality.all, wine.type.all)
+
+
+# ---------------------------------------------------------------------------- #
