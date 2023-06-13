@@ -11,7 +11,7 @@ library('corrplot')   # corrplot
 library('FactoMineR') # PCA
 library('factoextra') # eigenvalue
 library('caret')      # train
-
+library('ROCR')       # ROC curve
 
 # ---------------------------------------------------------------------------- #
 ### Gestione datasets ###
@@ -250,4 +250,49 @@ result <- confusionMatrix(nn.t10f.model, mode = "prec_recall", positive = "red",
 result
 
 rm(control, result)
+
+### Curva ROC-AUC ###
+
+# Type - naive bayes
+png(filename="./img/roc-nb-q.png", width = 600, height = 600)
+pred.to.roc = nb.q.probs[,2]
+pred.ROCR = prediction(pred.to.roc, wine.quality.test$target.quality)
+perf.ROCR = performance(pred.ROCR, measure="auc", x.measure="cutoff")
+perf.tpr.ROCR = performance(pred.ROCR, "tpr", "fpr")
+plot(perf.tpr.ROCR, colorize=T, main=paste("AUC:",(perf.ROCR@y.values)))
+abline(a=0, b=1)
+dev.off()
+
+# Type - neural network
+png(filename="./img/roc-nn-q.png", width = 600, height = 600)
+pred.to.roc = nn.q.probs[,2]
+pred.ROCR = prediction(pred.to.roc, wine.quality.test$target.quality)
+perf.ROCR = performance(pred.ROCR, measure="auc", x.measure="cutoff")
+perf.tpr.ROCR = performance(pred.ROCR, "tpr", "fpr")
+plot(perf.tpr.ROCR, colorize=T, main=paste("AUC:",(perf.ROCR@y.values)))
+abline(a=0, b=1)
+dev.off()
+
+# Type - naive bayes
+png(filename="./img/roc-nb-t.png", width = 600, height = 600)
+pred.to.roc = nb.t.probs[,2]
+pred.ROCR = prediction(pred.to.roc, wine.type.test$target.type)
+perf.ROCR = performance(pred.ROCR, measure="auc", x.measure="cutoff")
+perf.tpr.ROCR = performance(pred.ROCR, "tpr", "fpr")
+plot(perf.tpr.ROCR, colorize=T, main=paste("AUC:",(perf.ROCR@y.values)))
+abline(a=0, b=1)
+dev.off()
+
+# Type - neural network
+png(filename="./img/roc-nn-t.png", width = 600, height = 600)
+pred.to.roc = nn.t.probs[,2]
+pred.ROCR = prediction(pred.to.roc, wine.type.test$target.type)
+perf.ROCR = performance(pred.ROCR, measure="auc", x.measure="cutoff")
+perf.tpr.ROCR = performance(pred.ROCR, "tpr", "fpr")
+plot(perf.tpr.ROCR, colorize=T, main=paste("AUC:",(perf.ROCR@y.values)))
+abline(a=0, b=1)
+dev.off()
+
+rm(pred.to.roc, pred.ROCR, perf.ROCR, perf.tpr.ROCR)
+
 
