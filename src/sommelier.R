@@ -5,13 +5,14 @@
 # ---------------------------------------------------------------------------- #
 ### Dipendenze ###
 
-library('dplyr')      # count
+library('dplyr')      # count, mutate_if
 library("groupdata2") # downsample
 library('corrplot')   # corrplot
 library('FactoMineR') # PCA
 library('factoextra') # eigenvalue
 library('caret')      # train
 library('ROCR')       # ROC curve
+
 
 # ---------------------------------------------------------------------------- #
 ### Gestione datasets ###
@@ -23,10 +24,6 @@ wine.red['target.type'] <- 'red'
 wine.red$target.type <- as.factor(wine.red$target.type)
 
 count(wine.red, quality)
-png(filename = "./img/distribution-quality-red.png", width = 600, height = 600)
-barplot(table(wine.red$quality), main = "Distribuzione Quality - Rosso")
-dev.off()
-
 
 wine.white <-read.csv('./datasets/WineQT-White.csv')
 wine.white <- unique(wine.white)
@@ -34,7 +31,10 @@ wine.white['target.type'] <- 'white'
 wine.white$target.type <- as.factor(wine.white$target.type)
 
 count(wine.white, quality)
-png(filename = "./img/distribution-quality-white.png", width = 600, height = 600)
+
+png(filename = "./img/distribution-quality.png", width = 1300, height = 600)
+par(mfrow = c(1:2))
+barplot(table(wine.red$quality), main = "Distribuzione Quality - Rosso")
 barplot(table(wine.white$quality), main = "Distribuzione Quality - Bianco")
 dev.off()
 
@@ -91,7 +91,7 @@ summary(wine.analysis)
 
 # boxplot per visualizzare la distribuzione dei valori nel dataset
 png(filename = "./img/boxplot-attributes.png", width = 1500, height = 800)
-par(mfrow = c(2, (ncol(wine.analysis)) / 2))
+par(mfrow = c(2, 6))
 invisible(lapply(1:ncol(wine.analysis),
                  function(i) boxplot(wine.analysis[, i],
                                      cex.lab = 2,
@@ -106,7 +106,7 @@ wine.correlation$target.type <- as.numeric(wine$target.type)
 correlation <- cor(wine.correlation)
 
 png(filename = "./img/correlation.png", width = 1000, height = 1000)
-corrplot(correlation, method = "color", tl.col = "black")
+corrplot(correlation, tl.col = "black")
 dev.off()
 
 rm(wine.analysis, wine.correlation, correlation)
@@ -124,7 +124,7 @@ eig.val
 rm(eig.val)
 
 png(filename="./img/PCA-eigenvalues.png", width = 1480, height = 550)
-fviz_eig(wine.PCA, addlabels = TRUE)
+fviz_eig(wine.PCA, addlabels = TRUE)+theme(axis.text.x = element_text(size = 15))
 dev.off()
 
 png(filename="./img/PCA-variables.png",  width = 550, height = 550)
@@ -148,7 +148,7 @@ fviz_pca_ind(wine.PCA, label = "none", col.ind = "cos2")
 dev.off()
 
 png(filename="./img/PCA-qualities.png", width = 1480, height = 550)
-fviz_cos2(wine.PCA, choice = "var")
+fviz_cos2(wine.PCA, choice = "var")+theme(axis.text.x = element_text(size = 16,angle = 90,vjust = 0.5))
 dev.off()
 
 rm(wine.PCA)
@@ -169,6 +169,13 @@ attributes <- c(
   "sulphates"
 )
 
+wine.quality <- select(wine.quality, all_of(attributes))
+wine.type <- select(wine.type, all_of(attributes))
+
+# scaling dei valori
+wine.quality <- mutate_if(wine.quality, is.numeric, scale)
+wine.type <- mutate_if(wine.type, is.numeric, scale)
+
 # funzione di split dei dataset
 split.data = function(data, p = 0.7, s = 1) {
   set.seed(s)
@@ -178,11 +185,11 @@ split.data = function(data, p = 0.7, s = 1) {
   return(list(train = train, test = test))
 }
 
-wine.quality.all <- split.data(select(wine.quality, all_of(attributes)), p = 0.7)
+wine.quality.all <- split.data(wine.quality, p = 0.7)
 wine.quality.train <- wine.quality.all$train 
 wine.quality.test <- wine.quality.all$test
 
-wine.type.all <- split.data(select(wine.type, all_of(attributes)), p = 0.7)
+wine.type.all <- split.data(wine.type, p = 0.7)
 wine.type.train <- wine.type.all$train 
 wine.type.test <- wine.type.all$test
 
@@ -191,7 +198,6 @@ rm(split.data, attributes, wine.quality.all, wine.type.all)
 
 # ---------------------------------------------------------------------------- #
 ### Training & Testing ###
-
 
 # Quality - naive bayes
 nb.q.model <- train(target.quality~ ., data = wine.quality.train, method = "naive_bayes", trace = FALSE)
@@ -251,6 +257,8 @@ result
 
 rm(control, result)
 
+
+# ---------------------------------------------------------------------------- #
 ### Curva ROC-AUC ###
 
 # Type - naive bayes
