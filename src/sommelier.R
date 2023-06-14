@@ -296,3 +296,27 @@ dev.off()
 rm(pred.to.roc, pred.ROCR, perf.ROCR, perf.tpr.ROCR)
 
 
+cv.values = resamples(list(nb=nb.q10f.model, nn = nn.q10f.model))
+summary(cv.values)
+
+png(filename="./img/dotplot-q10f.png", width = 800, height = 400)
+dotplot(cv.values, metric = "ROC") 
+dev.off()
+
+png(filename="./img/dbwplot-q10f.png", width = 800, height = 400)
+bwplot(cv.values, layout = c(3, 1)) 
+dev.off()
+
+
+cv.values = resamples(list(nb=nb.t10f.model, nn = nn.t10f.model))
+summary(cv.values)
+
+png(filename="./img/dotplot-t10f.png", width = 800, height = 400)
+dotplot(cv.values, metric = "ROC") 
+dev.off()
+
+png(filename="./img/dbwplot-t10f.png", width = 800, height = 400)
+bwplot(cv.values, layout = c(3, 1)) 
+dev.off()
+
+rm(cv.values)
