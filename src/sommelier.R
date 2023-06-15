@@ -29,14 +29,12 @@ wine.red <- read.csv('./datasets/WineQT-Red.csv')
 wine.red <- unique(wine.red)
 wine.red['target.type'] <- 'red'
 wine.red$target.type <- as.factor(wine.red$target.type)
-
 count(wine.red, quality)
 
 wine.white <-read.csv('./datasets/WineQT-White.csv')
 wine.white <- unique(wine.white)
 wine.white['target.type'] <- 'white'
 wine.white$target.type <- as.factor(wine.white$target.type)
-
 count(wine.white, quality)
 
 png(filename = "./img/distribution-quality.png", width = 1300, height = 600)
@@ -44,7 +42,6 @@ par(mfrow = c(1:2))
 barplot(table(wine.red$quality), main = "Distribuzione Quality - Rosso")
 barplot(table(wine.white$quality), main = "Distribuzione Quality - Bianco")
 dev.off()
-
 
 wine <- merge(wine.red, wine.white, all = TRUE)
 
@@ -63,8 +60,8 @@ wine$target.quality <- as.factor(wine$target.quality)
 
 
 count(wine, target.quality)
-
 count(wine, target.type)
+
 png(filename = "./img/distribution-target.png", width = 1250, height = 600)
 par(mfrow = c(1:2))
 barplot(table(wine$target.quality), main = "Distribuzione Target - Quality")
@@ -140,11 +137,11 @@ fviz_pca_var(wine.PCA, title = "", col.var = "contrib")
 dev.off()
 
 png(filename="./img/PCA-individuals-group-type.png", width = 1000, height = 1000)
-fviz_pca_ind(wine.PCA, title = "Individuals - Type", label = "none", col.ind = wine$target.type)
+fviz_pca_ind(wine.PCA, title = "Type", label = "none", col.ind = wine$target.type)+theme(text = element_text(size = 20))
 dev.off()
 
 png(filename="./img/PCA-individuals-group-quality.png", width = 1000, height = 1000)
-fviz_pca_ind(wine.PCA, title = "Individuals - Quality",label = "none", col.ind = wine$target.quality)
+fviz_pca_ind(wine.PCA, title = "Quality",label = "none", col.ind = wine$target.quality)+theme(text = element_text(size = 20))
 dev.off()
 
 png(filename="./img/PCA-individuals.png", width = 1000, height = 1000)
@@ -188,6 +185,7 @@ split.data = function(data, p = 0.7, s = 1) {
   return(list(train = train, test = test))
 }
 
+# splitting dei valori
 wine.quality.all <- split.data(wine.quality, p = 0.7)
 wine.quality.train <- wine.quality.all$train 
 wine.quality.test <- wine.quality.all$test
@@ -288,6 +286,8 @@ result
 metric.values(result)
 
 rm(control, result, out.value)
+
+
 # ---------------------------------------------------------------------------- #
 ### Curva ROC-AUC ###
 
