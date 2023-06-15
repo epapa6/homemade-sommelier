@@ -349,27 +349,27 @@ abline(a=0, b=1)
 dev.off()
 
 
-cv.values = resamples(list(nb=nb.q10f.model, nn = nn.q10f.model))
+cv.values = resamples(list(nb = nb.q10f.model, nn = nn.q10f.model))
 summary(cv.values)
 
 png(filename="./img/dotplot-q10f.png", width = 800, height = 400)
-dotplot(cv.values, metric = "ROC") 
+dotplot(cv.values, metric = "ROC", main = "Quality") 
 dev.off()
 
 png(filename="./img/dbwplot-q10f.png", width = 800, height = 400)
-bwplot(cv.values, layout = c(3, 1)) 
+bwplot(cv.values, layout = c(3, 1), main = "Quality") 
 dev.off()
 
 
-cv.values = resamples(list(nb=nb.t10f.model, nn = nn.t10f.model))
+cv.values = resamples(list(nb = nb.t10f.model, nn = nn.t10f.model))
 summary(cv.values)
 
 png(filename="./img/dotplot-t10f.png", width = 800, height = 400)
-dotplot(cv.values, metric = "ROC") 
+dotplot(cv.values, metric = "ROC", main = "Type") 
 dev.off()
 
 png(filename="./img/dbwplot-t10f.png", width = 800, height = 400)
-bwplot(cv.values, layout = c(3, 1)) 
+bwplot(cv.values, layout = c(3, 1), main = "Type") 
 dev.off()
 
 rm(cv.values)
