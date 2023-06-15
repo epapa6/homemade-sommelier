@@ -1,6 +1,13 @@
 # Papa Emanuele - 844888
 # Furini Andrea - 845118
 
+# ---------------------------------------------------------------------------- #
+
+# svuoto memoria
+rm(list=ls())
+# pulisco la console
+cat("\014")
+
 
 # ---------------------------------------------------------------------------- #
 ### Dipendenze ###
@@ -17,7 +24,7 @@ library('ROCR')       # ROC curve
 # ---------------------------------------------------------------------------- #
 ### Gestione datasets ###
 
-# Join dei due datasets
+# join dei due datasets
 wine.red <- read.csv('./datasets/WineQT-Red.csv')
 wine.red <- unique(wine.red)
 wine.red['target.type'] <- 'red'
@@ -166,8 +173,7 @@ attributes <- c(
   "total.sulfur.dioxide",
   "fixed.acidity",
   "density",
-  "chlorides",
-  "sulphates"
+  "alcohol"
 )
 
 wine.quality <- select(wine.quality, all_of(attributes))
