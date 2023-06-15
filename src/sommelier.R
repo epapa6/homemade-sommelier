@@ -106,7 +106,7 @@ wine.correlation$target.type <- as.numeric(wine$target.type)
 correlation <- cor(wine.correlation)
 
 png(filename = "./img/correlation.png", width = 1000, height = 1000)
-corrplot(correlation, tl.col = "black")
+corrplot(correlation, method = "number", type = 'lower', diag = FALSE, tl.col = "black", number.cex = 1.2)
 dev.off()
 
 rm(wine.analysis, wine.correlation, correlation)
@@ -124,19 +124,19 @@ eig.val
 rm(eig.val)
 
 png(filename="./img/PCA-eigenvalues.png", width = 1480, height = 550)
-fviz_eig(wine.PCA, addlabels = TRUE)+theme(axis.text.x = element_text(size = 15))
+fviz_eig(wine.PCA, title = "", addlabels = TRUE)+theme(axis.text.x = element_text(size = 15))
 dev.off()
 
 png(filename="./img/PCA-variables.png",  width = 550, height = 550)
-fviz_pca_var(wine.PCA, col.var = "contrib")
+fviz_pca_var(wine.PCA, title = "", col.var = "contrib")
 dev.off()
 
 png(filename="./img/PCA-individuals-group-type.png", width = 1000, height = 1000)
-fviz_pca_ind(wine.PCA, label = "none", col.ind = wine$target.type)
+fviz_pca_ind(wine.PCA, title = "Individuals - Type", label = "none", col.ind = wine$target.type)
 dev.off()
 
 png(filename="./img/PCA-individuals-group-quality.png", width = 1000, height = 1000)
-fviz_pca_ind(wine.PCA, label = "none", col.ind = wine$target.quality)
+fviz_pca_ind(wine.PCA, title = "Individuals - Quality",label = "none", col.ind = wine$target.quality)
 dev.off()
 
 png(filename="./img/PCA-individuals-quality.png", width = 1000, height = 1000)
@@ -144,11 +144,11 @@ fviz_pca_ind(wine.PCA, label = "none", col.ind = wine$quality)
 dev.off()
 
 png(filename="./img/PCA-individuals.png", width = 1000, height = 1000)
-fviz_pca_ind(wine.PCA, label = "none", col.ind = "cos2")
+fviz_pca_ind(wine.PCA, title = "", label = "none", col.ind = "cos2")
 dev.off()
 
 png(filename="./img/PCA-qualities.png", width = 1480, height = 550)
-fviz_cos2(wine.PCA, choice = "var")+theme(axis.text.x = element_text(size = 16,angle = 90,vjust = 0.5))
+fviz_cos2(wine.PCA, title = "", choice = "var", axes = 1:3)+theme(axis.text.x = element_text(size = 16,angle = 90,vjust = 0.5))
 dev.off()
 
 rm(wine.PCA)
@@ -163,7 +163,7 @@ attributes <- c(
   "target.type",
   
   "total.sulfur.dioxide",
-  "volatile.acidity",
+  "fixed.acidity",
   "density",
   "chlorides",
   "sulphates"
