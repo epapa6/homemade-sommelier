@@ -147,10 +147,6 @@ png(filename="./img/PCA-individuals-group-quality.png", width = 1000, height = 1
 fviz_pca_ind(wine.PCA, title = "Individuals - Quality",label = "none", col.ind = wine$target.quality)
 dev.off()
 
-# png(filename="./img/PCA-individuals-quality.png", width = 1000, height = 1000)
-# fviz_pca_ind(wine.PCA, label = "none", col.ind = wine$quality)
-# dev.off()
-
 png(filename="./img/PCA-individuals.png", width = 1000, height = 1000)
 fviz_pca_ind(wine.PCA, title = "", label = "none", col.ind = "cos2")
 dev.off()
@@ -206,12 +202,30 @@ rm(split.data, attributes, wine.quality.all, wine.type.all)
 # ---------------------------------------------------------------------------- #
 ### Training & Testing ###
 
+metric.values = function(cm) {
+  
+  tp = cm$table[4]
+  fp = cm$table[2]
+  fn = cm$table[3]
+  tn = cm$table[1]
+  
+  accuracy = (tp + tn) / (tp + tn + fp + fn)
+  precision = tp / (tp + fp)
+  recall = tp / (tp + fn)
+  fmeasure = tp / (tp + 0.5 * (fp + fn))
+  return(list(accuracy = signif(accuracy, digits = 4), 
+              precision = signif(precision, digits = 4), 
+              recall = signif(recall, digits = 4), 
+              fmeasure = signif(fmeasure, digits = 4)))
+}
+
 # Quality - naive bayes
 nb.q.model <- train(target.quality~ ., data = wine.quality.train, method = "naive_bayes", trace = FALSE)
 nb.q.pred <- predict(nb.q.model, wine.quality.test)
 nb.q.probs <- predict(nb.q.model, wine.quality.test, type="prob")
 result <- confusionMatrix(nb.q.pred, wine.quality.test$target.quality, positive = "good", mode="prec_recall")
 result
+metric.values(result)
 
 # Quality - neural network
 nn.q.model <- train(target.quality~ ., data = wine.quality.train, method = "nnet", trace = FALSE)
@@ -219,20 +233,23 @@ nn.q.pred <- predict(nn.q.model, wine.quality.test)
 nn.q.probs <- predict(nn.q.model, wine.quality.test, type="prob")
 result <- confusionMatrix(nn.q.pred, wine.quality.test$target.quality, positive = "good", mode="prec_recall")
 result
+metric.values(result)
 
 # Type - naive bayes
 nb.t.model <- train(target.type~ ., data = wine.type.train, method = "naive_bayes", trace = FALSE)
 nb.t.pred <- predict(nb.t.model, wine.type.test)
 nb.t.probs <- predict(nb.t.model, wine.type.test, type="prob")
-result <- confusionMatrix(nb.t.pred, wine.type.test$target.type, positive = "red", mode="prec_recall")
+result <- confusionMatrix(nb.t.pred, wine.type.test$target.type, positive = "white", mode="prec_recall")
 result
+metric.values(result)
 
 # Type - neural network
 nn.t.model <- train(target.type~ ., data = wine.type.train, method = "nnet", trace = FALSE)
 nn.t.pred <- predict(nn.t.model, wine.type.test)
 nn.t.probs <- predict(nn.t.model, wine.type.test, type="prob")
-result <- confusionMatrix(nn.t.pred, wine.type.test$target.type, positive = "red", mode="prec_recall")
+result <- confusionMatrix(nn.t.pred, wine.type.test$target.type, positive = "white", mode="prec_recall")
 result
+metric.values(result)
 
 
 # ---------------------------------------------------------------------------- #
@@ -243,30 +260,34 @@ control <- trainControl(method = "repeatedcv", number = 10, repeats = 3,
                         summaryFunction= twoClassSummary, verboseIter=FALSE)
 
 # Quality - naive bayes (10-fold)
-nb.q10f.model <- train(target.quality~ ., data = wine, method = "naive_bayes", metric= "ROC", trControl = control, trace = FALSE)
-nb.q10f.probs <- predict(nb.q10f.model, wine, type="prob")
-result <- confusionMatrix(nb.q10f.model, mode = "prec_recall", positive = "good", norm="none")
+nb.q10f.model <- train(target.quality~ ., data = wine.quality, method = "naive_bayes", metric= "ROC", trControl = control, trace = FALSE)
+nb.q10f.probs <- predict(nb.q10f.model, wine.quality, type="prob")
+result <- confusionMatrix(nb.q10f.model, mode = "everything", positive = "good", norm="none")
 result
+metric.values(result)
 
 # Quality - neural network (10-fold)
-nn.q10f.model <- train(target.quality~ ., data = wine, method = "nnet", metric = "ROC", trControl = control, trace = FALSE)
-nn.q10f.probs <- predict(nn.q10f.model, wine, type="prob")
-result <- confusionMatrix(nn.q10f.model, mode = "prec_recall", positive = "good", norm="none")
+nn.q10f.model <- train(target.quality~ ., data = wine.quality, method = "nnet", metric = "ROC", trControl = control, trace = FALSE)
+nn.q10f.probs <- predict(nn.q10f.model, wine.quality, type="prob")
+result <- confusionMatrix(nn.q10f.model, mode = "everything", positive = "good", norm="none")
 result
+metric.values(result)
 
 # Type - naive bayes (10-fold)
-nb.t10f.model <- train(target.type~ ., data = wine, method = "naive_bayes", metric= "ROC", trControl = control, trace = FALSE)
-nb.t10f.probs <- predict(nb.t10f.model, wine, type="prob")
-result <- confusionMatrix(nb.t10f.model, mode = "prec_recall", positive = "red", norm="none")
+nb.t10f.model <- train(target.type~ ., data = wine.type, method = "naive_bayes", metric= "ROC", trControl = control, trace = FALSE)
+nb.t10f.probs <- predict(nb.t10f.model, wine.type, type="prob")
+result <- confusionMatrix(nb.t10f.model, mode = "everything", positive = "white", norm="none")
 result
+metric.values(result)
 
 # Type - neural network (10-fold)
-nn.t10f.model <- train(target.type~ ., data = wine, method = "nnet", metric = "ROC", trControl = control, trace = FALSE)
-nn.t10f.probs <- predict(nn.t10f.model, wine, type="prob")
-result <- confusionMatrix(nn.t10f.model, mode = "prec_recall", positive = "red", norm="none")
+nn.t10f.model <- train(target.type~ ., data = wine.type, method = "nnet", metric = "ROC", trControl = control, trace = FALSE)
+nn.t10f.probs <- predict(nn.t10f.model, wine.type, type="prob")
+result <- confusionMatrix(nn.t10f.model, mode = "everything", positive = "white", norm="none")
 result
+metric.values(result)
 
-rm(control, result)
+rm(control, result, out.value)
 # ---------------------------------------------------------------------------- #
 ### Curva ROC-AUC ###
 
@@ -312,9 +333,11 @@ dev.off()
 
 rm(pred.to.roc, pred.ROCR, perf.ROCR, perf.tpr.ROCR)
 
+
+
 png(filename="./img/roc-nb-q10f.png", width = 600, height = 600)
 pred.to.roc = nb.q10f.probs[,2]
-pred.ROCR = prediction(pred.to.roc, wine$target.quality)
+pred.ROCR = prediction(pred.to.roc, wine.quality$target.quality)
 perf.ROCR = performance(pred.ROCR, measure="auc", x.measure="cutoff")
 perf.tpr.ROCR = performance(pred.ROCR, "tpr", "fpr")
 plot(perf.tpr.ROCR, colorize=T, main=paste("NB.10f - Quality\nAUC:",(perf.ROCR@y.values)))
@@ -323,7 +346,7 @@ dev.off()
 
 png(filename="./img/roc-nn-q10f.png", width = 600, height = 600)
 pred.to.roc = nn.q10f.probs[,2]
-pred.ROCR = prediction(pred.to.roc, wine$target.quality)
+pred.ROCR = prediction(pred.to.roc, wine.quality$target.quality)
 perf.ROCR = performance(pred.ROCR, measure="auc", x.measure="cutoff")
 perf.tpr.ROCR = performance(pred.ROCR, "tpr", "fpr")
 plot(perf.tpr.ROCR, colorize=T, main=paste("NN.10f - Quality\nAUC:",(perf.ROCR@y.values)))
@@ -332,7 +355,7 @@ dev.off()
 
 png(filename="./img/roc-nb-t10f.png", width = 600, height = 600)
 pred.to.roc = nb.t10f.probs[,2]
-pred.ROCR = prediction(pred.to.roc, wine$target.type)
+pred.ROCR = prediction(pred.to.roc, wine.type$target.type)
 perf.ROCR = performance(pred.ROCR, measure="auc", x.measure="cutoff")
 perf.tpr.ROCR = performance(pred.ROCR, "tpr", "fpr")
 plot(perf.tpr.ROCR, colorize=T, main=paste("NB.10f - Type\nAUC:",(perf.ROCR@y.values)))
@@ -341,7 +364,7 @@ dev.off()
 
 png(filename="./img/roc-nn-t10f.png", width = 600, height = 600)
 pred.to.roc = nn.t10f.probs[,2]
-pred.ROCR = prediction(pred.to.roc, wine$target.type)
+pred.ROCR = prediction(pred.to.roc, wine.type$target.type)
 perf.ROCR = performance(pred.ROCR, measure="auc", x.measure="cutoff")
 perf.tpr.ROCR = performance(pred.ROCR, "tpr", "fpr")
 plot(perf.tpr.ROCR, colorize=T, main=paste("NN.10f - Type\nAUC:",(perf.ROCR@y.values)))
