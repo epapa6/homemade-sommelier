@@ -56,26 +56,25 @@ wine$target.quality <- as.factor(wine$target.quality)
 
 
 count(wine, target.quality)
-png(filename = "./img/distribution-target-quality.png", width = 600, height = 600)
-barplot(table(wine$target.quality), main = "Distribuzione Target - Quality")
-dev.off()
 
 count(wine, target.type)
-png(filename = "./img/distribution-target-type.png", width = 600, height = 600)
+png(filename = "./img/distribution-target.png", width = 1250, height = 600)
+par(mfrow = c(1:2))
+barplot(table(wine$target.quality), main = "Distribuzione Target - Quality")
 barplot(table(wine$target.type), main = "Distribuzione Target - Type")
 dev.off()
 
 # creo due downsample del dataset per lo studio
 wine.type <- downsample(wine, cat_col = "target.type")
 count(wine.type, wine.type$target.type)
-png(filename = "./img/ds-distribution-target-type.png", width = 600, height = 600)
-barplot(table(wine.type$target.type), main = "Distribuzione Downsample Target - Type")
-dev.off()
 
 wine.quality <- downsample(wine, cat_col = "target.quality")
 count(wine.quality, wine.quality$target.quality)
-png(filename = "./img/ds-distribution-target-quality.png", width = 600, height = 600)
+
+png(filename = "./img/ds-distribution-target.png", width = 1250, height = 600)
+par(mfrow = c(1:2))
 barplot(table(wine.quality$target.quality), main = "Distribuzione Downsample Target - Quality")
+barplot(table(wine.type$target.type), main = "Distribuzione Downsample Target - Type")
 dev.off()
 
 
@@ -98,6 +97,8 @@ invisible(lapply(1:ncol(wine.analysis),
                                      xlab = colnames(wine.analysis[i]))))
 dev.off()
 
+wine <- subset(wine, select = -c(quality))
+
 # matrice di correlazione degli attributi
 wine.correlation <- wine
 wine.correlation$target.quality <- as.numeric(wine$target.quality)
@@ -115,7 +116,7 @@ rm(wine.analysis, wine.correlation, correlation)
 # ---------------------------------------------------------------------------- #
 ### PCA ###
 
-wine.PCA <- PCA(subset(wine, select = -c(target.quality, target.type, quality)), 
+wine.PCA <- PCA(subset(wine, select = -c(target.quality, target.type)), 
                 scale.unit = TRUE, graph = FALSE)
 
 eig.val <- get_eigenvalue(wine.PCA)
@@ -139,9 +140,9 @@ png(filename="./img/PCA-individuals-group-quality.png", width = 1000, height = 1
 fviz_pca_ind(wine.PCA, title = "Individuals - Quality",label = "none", col.ind = wine$target.quality)
 dev.off()
 
-png(filename="./img/PCA-individuals-quality.png", width = 1000, height = 1000)
-fviz_pca_ind(wine.PCA, label = "none", col.ind = wine$quality)
-dev.off()
+# png(filename="./img/PCA-individuals-quality.png", width = 1000, height = 1000)
+# fviz_pca_ind(wine.PCA, label = "none", col.ind = wine$quality)
+# dev.off()
 
 png(filename="./img/PCA-individuals.png", width = 1000, height = 1000)
 fviz_pca_ind(wine.PCA, title = "", label = "none", col.ind = "cos2")
